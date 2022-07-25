@@ -30,9 +30,6 @@ public class MultitenantConfiguration {
      * @return
      */
     @Bean
-    @ConfigurationProperties(
-            prefix = "spring.datasource"
-    )
     public DataSource dataSource() {
         File[] files = Paths.get("tenants").toFile().listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {

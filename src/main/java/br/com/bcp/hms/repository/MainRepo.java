@@ -20,7 +20,7 @@ public class MainRepo {
     private MultitenantDataSource dataSource;
 
     public List<Map<String, Object>> getDataBean() {
-        log.info(">> Repo MAIN using DS tenant");
+        log.info(">> Repo MAIN using 'dataSource.getResolvedDefaultDataSource()' ");
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource.getResolvedDefaultDataSource());
         return jdbcTemplate.queryForList("select * from abcd");
 	}

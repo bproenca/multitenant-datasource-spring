@@ -12,9 +12,9 @@ public class MultitenantDataSource extends AbstractRoutingDataSource {
     protected Object determineCurrentLookupKey() {
         final String threadName = Thread.currentThread().getName();
         final Long threadId = Thread.currentThread().getId();
-        log.info(">> DetermineCurrentLookupKey running on: " + threadName + " - " + threadId + " returning key: " + TenantContext
+        log.info(">> DetermineCurrentLookupKey running on: " + threadName + " - " + threadId + " returning key: " + ThreadContext
                 .getCurrentTenant());
 
-        return TenantContext.getCurrentTenant();
+        return ThreadContext.getCurrentTenant();
     }
 }

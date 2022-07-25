@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import br.com.bcp.hms.tenant.TenantContext;
+import br.com.bcp.hms.tenant.ThreadContext;
 
 @Repository
 public class TenantRepo {
@@ -20,7 +20,7 @@ public class TenantRepo {
     private static Logger log = LoggerFactory.getLogger(TenantRepo.class);
 
     public List<Map<String, Object>> getData() {
-        log.info(">> Repo JdcbTemplate using DS tenant: {}", TenantContext.getCurrentTenant());
+        log.info(">> Repo JdcbTemplate using DS tenant: {}", ThreadContext.getCurrentTenant());
         return jdbcTemplate.queryForList("select * from abcd");
 	}
     

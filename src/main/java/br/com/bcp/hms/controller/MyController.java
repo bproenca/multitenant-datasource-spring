@@ -25,8 +25,8 @@ public class MyController {
 
     private Logger log = LoggerFactory.getLogger(MyController.class);
 
-    @GetMapping("/tenant/{tenant}/data")
-	public List<Map<String, Object>> getPB(@PathVariable String tenant) {
+    @GetMapping("/data/tenant/{tenant}")
+	public List<Map<String, Object>> data(@PathVariable String tenant) {
         log.info(">> [GET] /tenant/{}/data at {}", tenant, LocalDateTime.now());
         return tenantRepo.getData();
 	}
@@ -36,16 +36,16 @@ public class MyController {
         log.info(">> [GET] /ping at {}", LocalDateTime.now());
         return "pong";
 	}
-
-    @GetMapping("/main1")
-	public List<Map<String, Object>> main1() {
+    
+    @GetMapping("/main")
+	public List<Map<String, Object>> main() {
         log.info(">> [GET] /main1 at {}", LocalDateTime.now());
         return mainRepo.getDataBean();
 	}
-
-    @GetMapping("/dbtwo/main4")
-	public List<Map<String, Object>> main4() {
-        log.info(">> [GET] /main4 at {}", LocalDateTime.now());
+    
+    @GetMapping("/main/tenant/{tenant}")
+    public List<Map<String, Object>> mainTenant(@PathVariable String tenant) {
+        log.info(">> [GET] /mainTenant at {}", LocalDateTime.now());
         return mainRepo.getDataBean();
 	}
 }

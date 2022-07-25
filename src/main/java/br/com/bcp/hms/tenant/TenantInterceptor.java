@@ -20,17 +20,21 @@ public class TenantInterceptor implements HandlerInterceptor {
     private Logger log = LoggerFactory.getLogger(TenantInterceptor.class);
 
     @Override
+    @SuppressWarnings("rawtypes")
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         Map pathVariables = (Map) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
-        log.info(">> Interceptor {}", request.getPathInfo());
         String tenantIdentifier = (String) pathVariables.get("tenant");
-        TenantContext.setCurrentTenant(tenantIdentifier);
+        log.info(">> Interceptor PRE tenant {}", tenantIdentifier);
+        if (tenantIdentifier != null) {
+            ThreadContext.setCurrentTenant(tenantIdentifier);
+        }
         return true;
     }
 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
-                           @Nullable ModelAndView modelAndView) throws Exception {
-        TenantContext.clear();
+    @Nullable ModelAndView modelAndView) throws Exception {
+        log.info(">> Interceptor POST");
+        ThreadContext.clear();
     }
 }
