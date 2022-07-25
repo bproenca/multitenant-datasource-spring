@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.bcp.hms.repository.MainRepo;
 import br.com.bcp.hms.repository.TenantRepo;
+import br.com.bcp.hms.tenant.TenantDataSourceProperties;
 
 @RestController
 public class MyController {
@@ -35,7 +36,7 @@ public class MyController {
 	public String ping() {
         log.info(">> [GET] /ping at {}", LocalDateTime.now());
         return "pong";
-	}
+	}    
     
     @GetMapping("/main")
 	public List<Map<String, Object>> main() {
@@ -48,4 +49,12 @@ public class MyController {
         log.info(">> [GET] /mainTenant at {}", LocalDateTime.now());
         return mainRepo.getDataBean();
 	}
+
+    @Autowired
+    private TenantDataSourceProperties tenantDataSourceProperties;
+
+    @GetMapping("/props")
+	public TenantDataSourceProperties props() {
+        return tenantDataSourceProperties;
+	}    
 }

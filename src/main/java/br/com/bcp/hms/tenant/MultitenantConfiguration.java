@@ -27,6 +27,7 @@ public class MultitenantConfiguration {
 
     @Autowired
     private DataSourceProperties properties;
+    
 
     /**
      * Defines the data source for the application
