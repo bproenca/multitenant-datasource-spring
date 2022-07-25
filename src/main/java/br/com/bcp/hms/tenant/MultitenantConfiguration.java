@@ -129,7 +129,7 @@ public class MultitenantConfiguration {
         log.info("Building default  Datasource:  {}", properties.getUrl());
 
         HikariDataSource ds = new HikariDataSource();
-        ds.setPoolName("Hikari-h2-default");
+        ds.setPoolName("Hikari-Main");
         ds.setDriverClassName(properties.getDriverClassName());
         ds.setJdbcUrl(properties.getUrl());
         ds.setUsername(properties.getUsername());

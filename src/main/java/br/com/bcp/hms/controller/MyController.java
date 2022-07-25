@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.bcp.hms.repository.MainRepo;
 import br.com.bcp.hms.repository.TenantRepo;
 
 @RestController
@@ -18,6 +19,9 @@ public class MyController {
     
     @Autowired
     private TenantRepo tenantRepo;
+
+    @Autowired
+    private MainRepo mainRepo;
 
     private Logger log = LoggerFactory.getLogger(MyController.class);
 
@@ -31,5 +35,17 @@ public class MyController {
 	public String ping() {
         log.info(">> [GET] /ping at {}", LocalDateTime.now());
         return "pong";
+	}
+
+    @GetMapping("/main1")
+	public List<Map<String, Object>> main1() {
+        log.info(">> [GET] /main1 at {}", LocalDateTime.now());
+        return mainRepo.getDataBean();
+	}
+
+    @GetMapping("/dbtwo/main4")
+	public List<Map<String, Object>> main4() {
+        log.info(">> [GET] /main4 at {}", LocalDateTime.now());
+        return mainRepo.getDataBean();
 	}
 }
