@@ -1,21 +1,24 @@
 package br.com.bcp.hms.tenant;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import com.zaxxer.hikari.HikariDataSource;
-
-import java.io.*;
-import java.nio.file.Paths;
-import java.util.*;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import com.zaxxer.hikari.HikariDataSource;
 
 @Configuration
 public class MultitenantConfiguration {
@@ -73,7 +76,27 @@ public class MultitenantConfiguration {
         ds.setJdbcUrl(tenantProperties.getProperty("datasource.url"));
         ds.setUsername(tenantProperties.getProperty("datasource.username"));
         ds.setPassword(tenantProperties.getProperty("datasource.password"));
-        
+        configDS(ds);
+        return ds;
+    }
+
+    /**
+     * Creates the default data source for the application
+     * @return
+     */
+    private DataSource defaultDataSource() {
+        log.info("Building Default  Datasource:  {}", properties.getUrl());
+
+        HikariDataSource ds = new HikariDataSource();
+        ds.setPoolName("Hikari-Main");
+        ds.setJdbcUrl(properties.getUrl());
+        ds.setUsername(properties.getUsername());
+        ds.setPassword(properties.getPassword());
+        configDS(ds);
+        return ds;
+    }
+
+    private void configDS(HikariDataSource ds) {
         ds.setDriverClassName("oracle.jdbc.OracleDriver");
         ds.setAllowPoolSuspension(false);
         ds.setAutoCommit(true);
@@ -89,49 +112,29 @@ public class MultitenantConfiguration {
         ds.setRegisterMbeans(false);
         ds.setValidationTimeout(5000);
 
-        if ("ufpb".equalsIgnoreCase(tenantProperties.getProperty("name"))) {
-            StringBuilder initSQL = new StringBuilder();
-            initSQL
-                .append("BEGIN")
-                //.append(" execute immediate 'alter session set NLS_DATE_FORMAT = ''DD/MM/YYYY'''; ")
-                .append(" dbms_session.set_nls('NLS_LANGUAGE', '''BRAZILIAN PORTUGUESE''');  ")
-                .append(" dbms_session.set_nls('NLS_TERRITORY', '''BRAZIL''');  ")
-                .append(" dbms_session.set_nls('NLS_CURRENCY', '''R$''');  ")
-                .append(" dbms_session.set_nls('NLS_ISO_CURRENCY', '''BRAZIL''');  ")
-                .append(" dbms_session.set_nls('NLS_NUMERIC_CHARACTERS', ''',.''');  ")
-                .append(" dbms_session.set_nls('NLS_CALENDAR', '''GREGORIAN''');  ")
-                .append(" dbms_session.set_nls('NLS_DATE_FORMAT', '''DD/MM/YYYY''');  ")
-                .append(" dbms_session.set_nls('NLS_DATE_LANGUAGE', '''BRAZILIAN PORTUGUESE''');  ")
-                .append(" dbms_session.set_nls('NLS_SORT', '''WEST_EUROPEAN''');  ")
-                .append(" dbms_session.set_nls('NLS_TIME_FORMAT', '''HH24:MI:SSXFF''');  ")
-                .append(" dbms_session.set_nls('NLS_TIMESTAMP_FORMAT', '''DD/MM/YYYY HH24:MI:SSXFF''');  ")
-                .append(" dbms_session.set_nls('NLS_TIME_TZ_FORMAT', '''HH24:MI:SSXFF TZR''');  ")
-                .append(" dbms_session.set_nls('NLS_TIMESTAMP_TZ_FORMAT', '''DD/MM/YYYY HH24:MI:SSXFF TZR''');  ")
-                .append(" dbms_session.set_nls('NLS_DUAL_CURRENCY', '''R$''');  ")
-                .append(" dbms_session.set_nls('NLS_COMP', '''BINARY''');  ")
-                .append(" dbms_session.set_nls('NLS_LENGTH_SEMANTICS', '''CHAR''');  ")
-                .append(" dbms_session.set_nls('NLS_NCHAR_CONV_EXCP', '''FALSE''');  ")
-                .append("END;");
+        StringBuilder initSQL = new StringBuilder();
+        initSQL
+            .append("BEGIN")
+            //.append(" execute immediate 'alter session set NLS_DATE_FORMAT = ''DD/MM/YYYY'''; ")
+            .append(" dbms_session.set_nls('NLS_LANGUAGE', '''BRAZILIAN PORTUGUESE''');  ")
+            .append(" dbms_session.set_nls('NLS_TERRITORY', '''BRAZIL''');  ")
+            .append(" dbms_session.set_nls('NLS_CURRENCY', '''R$''');  ")
+            .append(" dbms_session.set_nls('NLS_ISO_CURRENCY', '''BRAZIL''');  ")
+            .append(" dbms_session.set_nls('NLS_NUMERIC_CHARACTERS', ''',.''');  ")
+            .append(" dbms_session.set_nls('NLS_CALENDAR', '''GREGORIAN''');  ")
+            .append(" dbms_session.set_nls('NLS_DATE_FORMAT', '''DD/MM/YYYY''');  ")
+            .append(" dbms_session.set_nls('NLS_DATE_LANGUAGE', '''BRAZILIAN PORTUGUESE''');  ")
+            .append(" dbms_session.set_nls('NLS_SORT', '''WEST_EUROPEAN''');  ")
+            .append(" dbms_session.set_nls('NLS_TIME_FORMAT', '''HH24:MI:SSXFF''');  ")
+            .append(" dbms_session.set_nls('NLS_TIMESTAMP_FORMAT', '''DD/MM/YYYY HH24:MI:SSXFF''');  ")
+            .append(" dbms_session.set_nls('NLS_TIME_TZ_FORMAT', '''HH24:MI:SSXFF TZR''');  ")
+            .append(" dbms_session.set_nls('NLS_TIMESTAMP_TZ_FORMAT', '''DD/MM/YYYY HH24:MI:SSXFF TZR''');  ")
+            .append(" dbms_session.set_nls('NLS_DUAL_CURRENCY', '''R$''');  ")
+            .append(" dbms_session.set_nls('NLS_COMP', '''BINARY''');  ")
+            .append(" dbms_session.set_nls('NLS_LENGTH_SEMANTICS', '''CHAR''');  ")
+            .append(" dbms_session.set_nls('NLS_NCHAR_CONV_EXCP', '''FALSE''');  ")
+            .append("END;");
 
-            ds.setConnectionInitSql(initSQL.toString());
-        }
-        return ds;
-    }
-
-    /**
-     * Creates the default data source for the application
-     * @return
-     */
-    private DataSource defaultDataSource() {
-        log.info("Building default  Datasource:  {}", properties.getUrl());
-
-        HikariDataSource ds = new HikariDataSource();
-        ds.setPoolName("Hikari-Main");
-        ds.setDriverClassName(properties.getDriverClassName());
-        ds.setJdbcUrl(properties.getUrl());
-        ds.setUsername(properties.getUsername());
-        ds.setPassword(properties.getPassword());
-        ds.setMaximumPoolSize(2);
-        return ds;
+        ds.setConnectionInitSql(initSQL.toString());        
     }
 }
