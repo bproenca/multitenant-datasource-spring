@@ -1,13 +1,7 @@
 package br.com.bcp.hms.tenant;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.sql.DataSource;
 
@@ -28,6 +22,8 @@ public class MultitenantConfiguration {
     @Autowired
     private DataSourceProperties properties;
     
+    @Autowired
+    private TenantDataSourceProperties tenantDataSourceProperties;
 
     /**
      * Defines the data source for the application
@@ -35,33 +31,9 @@ public class MultitenantConfiguration {
      */
     @Bean
     public DataSource dataSource() {
-        File[] files = Paths.get("tenants").toFile().listFiles(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                return name.toLowerCase().endsWith(".properties");
-            }
-        });
-        Map<Object,Object> resolvedDataSources = new HashMap<>();
-
-        for(File propertyFile : files) {
-            Properties tenantProperties = new Properties();
-
-            try {
-                tenantProperties.load(new FileInputStream(propertyFile));
-                String tenantId = tenantProperties.getProperty("name");
-                resolvedDataSources.put(tenantId, buildTenantDataSource(tenantProperties));
-            } catch (IOException e) {
-                e.printStackTrace();
-                return null;
-            }
-        }
-
-        // Create the final multi-tenant source.
-        // It needs a default database to connect to.
-        // Make sure that the default database is actually an empty tenant database.
-        // Don't use that for a regular tenant if you want things to be safe!
         MultitenantDataSource dataSource = new MultitenantDataSource();
         dataSource.setDefaultTargetDataSource(defaultDataSource());
-        dataSource.setTargetDataSources(resolvedDataSources);
+        dataSource.setTargetDataSources(buildTenantsDataSource());
 
         // Call this to finalize the initialization of the data source.
         dataSource.afterPropertiesSet();
@@ -69,16 +41,23 @@ public class MultitenantConfiguration {
         return dataSource;
     }
 
-    private DataSource buildTenantDataSource(Properties tenantProperties) {
-        log.info("Building Tenant Datasource:  {}", tenantProperties);
+    private Map<Object, Object> buildTenantsDataSource() {
+        Map<Object, Object> resolvedDataSources = new HashMap<>();
 
-        HikariDataSource ds = new HikariDataSource();
-        ds.setPoolName("Hikari-" + tenantProperties.getProperty("name"));
-        ds.setJdbcUrl(tenantProperties.getProperty("datasource.url"));
-        ds.setUsername(tenantProperties.getProperty("datasource.username"));
-        ds.setPassword(tenantProperties.getProperty("datasource.password"));
-        configDS(ds);
-        return ds;
+        for (Map<String, String> tenantProperties : tenantDataSourceProperties.getDatasource()) {
+            log.info("Building Tenant Datasource:  {}", tenantProperties.get("poolName"));
+    
+            HikariDataSource ds = new HikariDataSource();
+            ds.setPoolName("Hikari-" + tenantProperties.get("poolName"));
+            ds.setJdbcUrl(tenantProperties.get("jdbcUrl"));
+            ds.setUsername(tenantProperties.get("username"));
+            ds.setPassword(tenantProperties.get("password"));
+            configDS(ds);
+            
+            resolvedDataSources.put(tenantProperties.get("poolName"), ds);
+        }
+
+        return resolvedDataSources;
     }
 
     /**

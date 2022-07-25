@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.bcp.hms.repository.MainRepo;
 import br.com.bcp.hms.repository.TenantRepo;
-import br.com.bcp.hms.tenant.TenantDataSourceProperties;
 
 @RestController
 public class MyController {
@@ -25,6 +24,14 @@ public class MyController {
     private MainRepo mainRepo;
 
     private Logger log = LoggerFactory.getLogger(MyController.class);
+
+    @GetMapping("/both/tenant/{tenant}")
+	public List<Map<String, Object>> both(@PathVariable String tenant) {
+        log.info(">> [GET] /both/tenant/{}/data at {}", tenant, LocalDateTime.now());
+        List<Map<String, Object>> data = tenantRepo.getData();
+        data.addAll(mainRepo.getDataBean());
+        return data;
+	}
 
     @GetMapping("/data/tenant/{tenant}")
 	public List<Map<String, Object>> data(@PathVariable String tenant) {
@@ -49,12 +56,5 @@ public class MyController {
         log.info(">> [GET] /mainTenant at {}", LocalDateTime.now());
         return mainRepo.getDataBean();
 	}
-
-    @Autowired
-    private TenantDataSourceProperties tenantDataSourceProperties;
-
-    @GetMapping("/props")
-	public TenantDataSourceProperties props() {
-        return tenantDataSourceProperties;
-	}    
+    
 }
