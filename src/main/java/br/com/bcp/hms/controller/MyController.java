@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.bcp.hms.repository.MainRepo;
 import br.com.bcp.hms.repository.TenantRepo;
 
 @RestController
@@ -20,23 +19,20 @@ public class MyController {
     @Autowired
     private TenantRepo tenantRepo;
 
-    @Autowired
-    private MainRepo mainRepo;
-
     private Logger log = LoggerFactory.getLogger(MyController.class);
-
-    @GetMapping("/both/tenant/{tenant}")
-	public List<Map<String, Object>> both(@PathVariable String tenant) {
-        log.info(">> [GET] /both/tenant/{}/data at {}", tenant, LocalDateTime.now());
-        List<Map<String, Object>> data = tenantRepo.getData();
-        data.addAll(mainRepo.getDataBean());
-        return data;
-	}
 
     @GetMapping("/data/tenant/{tenant}")
 	public List<Map<String, Object>> data(@PathVariable String tenant) {
-        log.info(">> [GET] /tenant/{}/data at {}", tenant, LocalDateTime.now());
-        return tenantRepo.getData();
+        log.info(">> [GET] /data/tenant/{} at {}", tenant, LocalDateTime.now());
+        return tenantRepo.getData(tenant);
+	}
+
+    @GetMapping("/data/tenants/{tenant1}/{tenant2}")
+	public List<Map<String, Object>> data(@PathVariable String tenant1, @PathVariable String tenant2) {
+        log.info(">> [GET] /data/tenants/{}/{} at {}", tenant1, tenant2, LocalDateTime.now());
+        List<Map<String, Object>> data = tenantRepo.getData(tenant1);
+        data.addAll(tenantRepo.getData(tenant2));
+        return data;
 	}
 
     @GetMapping("/ping")
@@ -44,17 +40,5 @@ public class MyController {
         log.info(">> [GET] /ping at {}", LocalDateTime.now());
         return "pong";
 	}    
-    
-    @GetMapping("/main")
-	public List<Map<String, Object>> main() {
-        log.info(">> [GET] /main1 at {}", LocalDateTime.now());
-        return mainRepo.getDataBean();
-	}
-    
-    @GetMapping("/main/tenant/{tenant}")
-    public List<Map<String, Object>> mainTenant(@PathVariable String tenant) {
-        log.info(">> [GET] /mainTenant at {}", LocalDateTime.now());
-        return mainRepo.getDataBean();
-	}
     
 }

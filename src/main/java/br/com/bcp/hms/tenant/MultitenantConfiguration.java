@@ -1,14 +1,10 @@
 package br.com.bcp.hms.tenant;
 
-import java.util.HashMap;
 import java.util.Map;
-
-import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -20,60 +16,30 @@ public class MultitenantConfiguration {
     private static final Logger log = LoggerFactory.getLogger(MultitenantConfiguration.class);
 
     @Autowired
-    private DataSourceProperties properties;
-    
-    @Autowired
     private TenantDataSourceProperties tenantDataSourceProperties;
 
     /**
      * Defines the data source for the application
      * @return
      */
-    @Bean
-    public DataSource dataSource() {
-        MultitenantDataSource dataSource = new MultitenantDataSource();
-        dataSource.setDefaultTargetDataSource(defaultDataSource());
-        dataSource.setTargetDataSources(buildTenantsDataSource());
-
-        // Call this to finalize the initialization of the data source.
-        dataSource.afterPropertiesSet();
-
-        return dataSource;
-    }
-
-    private Map<Object, Object> buildTenantsDataSource() {
-        Map<Object, Object> resolvedDataSources = new HashMap<>();
+    @Bean(name = "multitenantDataSource")
+    public MultitenantDataSource multitenantDataSource() {
+        MultitenantDataSource multitenantDataSource = new MultitenantDataSource();
 
         for (Map<String, String> tenantProperties : tenantDataSourceProperties.getDatasource()) {
             log.info("Building Tenant Datasource:  {}", tenantProperties.get("poolName"));
     
             HikariDataSource ds = new HikariDataSource();
-            ds.setPoolName("Hikari-" + tenantProperties.get("poolName"));
+            ds.setPoolName("xHikari-" + tenantProperties.get("poolName"));
             ds.setJdbcUrl(tenantProperties.get("jdbcUrl"));
             ds.setUsername(tenantProperties.get("username"));
             ds.setPassword(tenantProperties.get("password"));
             configDS(ds);
             
-            resolvedDataSources.put(tenantProperties.get("poolName"), ds);
+            multitenantDataSource.addDataSource(tenantProperties.get("poolName"), ds);
         }
 
-        return resolvedDataSources;
-    }
-
-    /**
-     * Creates the default data source for the application
-     * @return
-     */
-    private DataSource defaultDataSource() {
-        log.info("Building Default  Datasource:  {}", properties.getUrl());
-
-        HikariDataSource ds = new HikariDataSource();
-        ds.setPoolName("Hikari-Main");
-        ds.setJdbcUrl(properties.getUrl());
-        ds.setUsername(properties.getUsername());
-        ds.setPassword(properties.getPassword());
-        configDS(ds);
-        return ds;
+        return multitenantDataSource;
     }
 
     private void configDS(HikariDataSource ds) {
