@@ -3,12 +3,6 @@
 How to implement **multiple database/datasource** connections.  
 Project using: Spring Starter JDBC and Oracle database.  
 
-### Tenant databases:
-Customer databases (1..N) determined based on the URL PathVariable (set to ThreadLocal).
-
-### Main database:
-One default (main) database, used (for example) to store env configurations.
-
 # Install
 
 ### Database creation:
@@ -64,9 +58,6 @@ https://httpie.io/
 http localhost:8080/data/tenant/dbone
 http localhost:8080/data/tenant/dbtwo
 
-http localhost:8080/both/tenant/dbone
-http localhost:8080/both/tenant/dbtwo
-
-http localhost:8080/main
+http localhost:8080/data/tenants/dbone/dbtwo
 ```
 
