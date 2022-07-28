@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>br.com.bcp</groupId>
-	<artifactId>hybrid-multitenancy-spring</artifactId>
+	<artifactId>multitenant-datasource-spring</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>hybrid-multitenancy-spring</name>
-	<description>Demo project for Spring Boot</description>
+	<name>multitenant-datasource-spring</name>
+	<description>Demo project for Spring Boot and Multiple DataSources</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>
